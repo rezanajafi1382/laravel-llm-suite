@@ -10,6 +10,20 @@ A unified, driver-based Laravel toolkit for working with multiple LLM providers 
 - **Laravel Native** - Config files, facades, service providers
 - **Testable** - Built-in faking support for testing without API calls
 
+## Supported Providers
+
+| Provider | Driver | Chat | Image | Models List |
+|----------|--------|:----:|:-----:|:-----------:|
+| **OpenAI** | `openai` | Yes | Yes | Yes |
+| **Anthropic** | `anthropic` | Yes | - | - |
+| **LM Studio** | `lmstudio` | Yes | - | Yes |
+| **Dummy** | `dummy` | Yes | Yes | - |
+
+- **OpenAI** - GPT-4, GPT-4.1, DALL-E 3, and other OpenAI models
+- **Anthropic** - Claude 3.5 Sonnet, Claude 3 Opus, and other Claude models
+- **LM Studio** - Run any open-source LLM locally (Llama, Mistral, Phi, etc.)
+- **Dummy** - For testing and offline development (returns configurable mock responses)
+
 ## Requirements
 
 - PHP 8.1+
@@ -365,6 +379,12 @@ $response = Llm::using('my-custom')->chat('Hello!');
 | `Llm::client($name)` | Get the underlying client instance |
 
 ### Client Methods (OpenAI, LM Studio)
+
+You can access the underlying client instance using `Llm::client('provider')` to call provider-specific methods:
+
+```php
+$client = Llm::client('openai');    // or 'lmstudio'
+```
 
 | Method | Description |
 |--------|-------------|
