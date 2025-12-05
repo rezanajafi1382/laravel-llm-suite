@@ -8,6 +8,7 @@ use Oziri\LlmSuite\Contracts\ChatClient;
 use Oziri\LlmSuite\Contracts\ImageClient;
 use Oziri\LlmSuite\Support\ChatResponse;
 use Oziri\LlmSuite\Support\ImageResponse;
+use Oziri\LlmSuite\Support\TokenUsage;
 
 /**
  * Dummy client for testing and offline development.
@@ -101,6 +102,10 @@ class DummyClient implements ChatClient, ImageClient
 
         $content = $this->chatResponse ?? "This is a dummy response to: {$prompt}";
 
+        // Simulate token usage (rough estimate: ~4 chars per token)
+        $promptTokens = (int) ceil(strlen($prompt) / 4);
+        $completionTokens = (int) ceil(strlen($content) / 4);
+
         return new ChatResponse(
             content: $content,
             raw: [
@@ -111,6 +116,7 @@ class DummyClient implements ChatClient, ImageClient
             model: self::DEFAULT_MODEL,
             id: self::DEFAULT_ID_PREFIX . uniqid(),
             latencyMs: 0.0,
+            tokenUsage: new TokenUsage($promptTokens, $completionTokens),
         );
     }
 

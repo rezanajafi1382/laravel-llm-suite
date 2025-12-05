@@ -15,7 +15,11 @@ class ChatResponse
         public ?string $model = null,
         public ?string $id = null,
         public ?float $latencyMs = null,
-    ) {}
+        public ?TokenUsage $tokenUsage = null,
+    ) {
+        // Ensure tokenUsage is never null for convenience
+        $this->tokenUsage ??= TokenUsage::empty();
+    }
 
     /**
      * Get the response content as a string.
@@ -40,5 +44,28 @@ class ChatResponse
     {
         return empty($this->content);
     }
-}
 
+    /**
+     * Get the total tokens used in this request.
+     */
+    public function getTotalTokens(): int
+    {
+        return $this->tokenUsage->totalTokens;
+    }
+
+    /**
+     * Get the prompt/input tokens used.
+     */
+    public function getPromptTokens(): int
+    {
+        return $this->tokenUsage->promptTokens;
+    }
+
+    /**
+     * Get the completion/output tokens used.
+     */
+    public function getCompletionTokens(): int
+    {
+        return $this->tokenUsage->completionTokens;
+    }
+}

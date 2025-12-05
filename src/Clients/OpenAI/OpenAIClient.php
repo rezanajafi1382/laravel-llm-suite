@@ -11,6 +11,7 @@ use Oziri\LlmSuite\Contracts\ImageClient;
 use Oziri\LlmSuite\Exceptions\ProviderRequestException;
 use Oziri\LlmSuite\Support\ChatResponse;
 use Oziri\LlmSuite\Support\ImageResponse;
+use Oziri\LlmSuite\Support\TokenUsage;
 
 /**
  * OpenAI API client implementation.
@@ -123,12 +124,18 @@ class OpenAIClient implements ChatClient, ImageClient
         $data = $response->json();
         $content = $data['choices'][0]['message']['content'] ?? '';
 
+        // Parse token usage from response
+        $tokenUsage = isset($data['usage']) 
+            ? TokenUsage::fromArray($data['usage']) 
+            : TokenUsage::empty();
+
         return new ChatResponse(
             content: $content,
             raw: $data,
             model: $data['model'] ?? null,
             id: $data['id'] ?? null,
             latencyMs: $latencyMs,
+            tokenUsage: $tokenUsage,
         );
     }
 

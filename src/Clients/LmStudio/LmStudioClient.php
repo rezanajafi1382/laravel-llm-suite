@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Oziri\LlmSuite\Contracts\ChatClient;
 use Oziri\LlmSuite\Exceptions\ProviderRequestException;
 use Oziri\LlmSuite\Support\ChatResponse;
+use Oziri\LlmSuite\Support\TokenUsage;
 
 /**
  * LM Studio client implementation.
@@ -136,12 +137,18 @@ class LmStudioClient implements ChatClient
         $data = $response->json();
         $content = $data['choices'][0]['message']['content'] ?? '';
 
+        // Parse token usage from response (OpenAI-compatible format)
+        $tokenUsage = isset($data['usage']) 
+            ? TokenUsage::fromArray($data['usage']) 
+            : TokenUsage::empty();
+
         return new ChatResponse(
             content: $content,
             raw: $data,
             model: $data['model'] ?? null,
             id: $data['id'] ?? null,
             latencyMs: $latencyMs,
+            tokenUsage: $tokenUsage,
         );
     }
 

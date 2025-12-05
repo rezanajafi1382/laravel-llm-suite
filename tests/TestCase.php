@@ -30,9 +30,24 @@ abstract class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
+        // Use SQLite in-memory for testing
+        $app['config']->set('database.default', 'testing');
+        $app['config']->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
+
+        // Set default LLM config for tests
         $app['config']->set('llm-suite.default', 'dummy');
         $app['config']->set('llm-suite.providers.dummy', [
             'driver' => 'dummy',
+        ]);
+
+        // Conversation config for tests
+        $app['config']->set('llm-suite.conversation', [
+            'driver' => 'session',
+            'table' => 'llm_conversations',
         ]);
     }
 }

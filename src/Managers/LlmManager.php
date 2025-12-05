@@ -5,15 +5,20 @@ declare(strict_types=1);
 namespace Oziri\LlmSuite\Managers;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Oziri\LlmSuite\Clients\Anthropic\AnthropicClient;
 use Oziri\LlmSuite\Clients\Dummy\DummyClient;
 use Oziri\LlmSuite\Clients\LmStudio\LmStudioClient;
 use Oziri\LlmSuite\Clients\OpenAI\OpenAIClient;
 use Oziri\LlmSuite\Contracts\ChatClient;
+use Oziri\LlmSuite\Contracts\ConversationStore;
 use Oziri\LlmSuite\Contracts\ImageClient;
 use Oziri\LlmSuite\Contracts\LlmClient;
+use Oziri\LlmSuite\ConversationStores\DatabaseStore;
+use Oziri\LlmSuite\ConversationStores\SessionStore;
 use Oziri\LlmSuite\Exceptions\ProviderConfigException;
 use Oziri\LlmSuite\Support\ChatResponse;
+use Oziri\LlmSuite\Support\Conversation;
 use Oziri\LlmSuite\Support\ImageResponse;
 
 /**
@@ -41,6 +46,11 @@ class LlmManager
      * Custom driver creators.
      */
     protected array $customCreators = [];
+
+    /**
+     * The conversation store instance.
+     */
+    protected ?ConversationStore $conversationStore = null;
 
     public function __construct(array $config)
     {
@@ -248,6 +258,80 @@ class LlmManager
     public function getConfig(): array
     {
         return $this->config;
+    }
+
+    /**
+     * Start or resume a conversation.
+     *
+     * @param string|null $conversationId Unique ID for the conversation (auto-generated if null)
+     * @param string|null $provider Provider to use for this conversation
+     * @return Conversation
+     */
+    public function conversation(?string $conversationId = null, ?string $provider = null): Conversation
+    {
+        $conversationId = $conversationId ?? $this->generateConversationId();
+        $provider = $provider ?? $this->getCurrentProviderName();
+        
+        // Reset current after getting the name
+        $this->current = null;
+
+        $client = $this->client($provider);
+
+        if (! $client instanceof ChatClient) {
+            throw new \InvalidArgumentException("LLM provider [{$provider}] does not support chat.");
+        }
+
+        return new Conversation(
+            id: $conversationId,
+            store: $this->getConversationStore(),
+            client: $client,
+            provider: $provider
+        );
+    }
+
+    /**
+     * Get the conversation store instance.
+     */
+    public function getConversationStore(): ConversationStore
+    {
+        if ($this->conversationStore === null) {
+            $this->conversationStore = $this->createConversationStore();
+        }
+
+        return $this->conversationStore;
+    }
+
+    /**
+     * Set a custom conversation store.
+     */
+    public function setConversationStore(ConversationStore $store): static
+    {
+        $this->conversationStore = $store;
+
+        return $this;
+    }
+
+    /**
+     * Create the conversation store based on configuration.
+     */
+    protected function createConversationStore(): ConversationStore
+    {
+        $config = $this->config['conversation'] ?? [];
+        $driver = $config['driver'] ?? 'session';
+
+        return match ($driver) {
+            'session' => new SessionStore(),
+            'database' => new DatabaseStore($config),
+            default => new SessionStore(),
+        };
+    }
+
+    /**
+     * Generate a unique conversation ID.
+     */
+    protected function generateConversationId(): string
+    {
+        return Str::uuid()->toString();
     }
 }
 

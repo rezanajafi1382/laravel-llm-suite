@@ -6,11 +6,13 @@ namespace Oziri\LlmSuite\Facades;
 
 use Illuminate\Support\Facades\Facade;
 use Oziri\LlmSuite\Contracts\ChatClient;
+use Oziri\LlmSuite\Contracts\ConversationStore;
 use Oziri\LlmSuite\Contracts\ImageClient;
 use Oziri\LlmSuite\Contracts\LlmClient;
 use Oziri\LlmSuite\Helpers\LlmFake;
 use Oziri\LlmSuite\Managers\LlmManager;
 use Oziri\LlmSuite\Support\ChatResponse;
+use Oziri\LlmSuite\Support\Conversation;
 use Oziri\LlmSuite\Support\ImageResponse;
 
 /**
@@ -29,6 +31,9 @@ use Oziri\LlmSuite\Support\ImageResponse;
  * @method static LlmManager forgetClient(string $name)
  * @method static LlmManager forgetAllClients()
  * @method static array getConfig()
+ * @method static Conversation conversation(?string $conversationId = null, ?string $provider = null)
+ * @method static ConversationStore getConversationStore()
+ * @method static LlmManager setConversationStore(ConversationStore $store)
  *
  * @see \Oziri\LlmSuite\Managers\LlmManager
  */

@@ -10,6 +10,8 @@ A unified, driver-based Laravel toolkit for working with multiple LLM providers 
 
 - **Unified API** - Same interface regardless of provider (OpenAI, Anthropic, LM Studio, etc.)
 - **Driver Pattern** - Switch providers like Laravel's Storage or Mail systems
+- **Conversation Management** - Automatic message history with session or database storage
+- **Token Usage Tracking** - Monitor token consumption for cost management
 - **Local LLM Support** - Run models locally with LM Studio for development and testing
 - **Laravel Native** - Config files, facades, service providers
 - **Testable** - Built-in faking support for testing without API calls
@@ -69,6 +71,9 @@ LMSTUDIO_HOST=127.0.0.1
 LMSTUDIO_PORT=1234
 LMSTUDIO_API_KEY=        # Optional - leave empty if not using authentication
 LMSTUDIO_TIMEOUT=120
+
+# Conversation Storage
+LLM_CONVERSATION_DRIVER=session   # or 'database'
 ```
 
 The configuration file (`config/llm-suite.php`) allows you to customize providers:
@@ -105,6 +110,12 @@ return [
         'dummy' => [
             'driver' => 'dummy',
         ],
+    ],
+
+    // Conversation storage settings
+    'conversation' => [
+        'driver' => env('LLM_CONVERSATION_DRIVER', 'session'),
+        'table' => 'llm_conversations',  // For database driver
     ],
 ];
 ```
@@ -164,6 +175,120 @@ use Llm;
 $response = Llm::chat('What is 2 + 2?', [
     'system' => 'You are a helpful math tutor. Always explain your reasoning.',
 ]);
+```
+
+### Conversations (Multi-turn Chat)
+
+Build chatbots and maintain context across multiple messages:
+
+```php
+use Llm;
+
+// Start a NEW conversation (auto-generates UUID)
+$conversation = Llm::conversation();
+$conversation->system('You are a helpful assistant.');
+
+// Chat with automatic context - the LLM remembers previous messages!
+$response = $conversation->chat('My name is John.');
+$response = $conversation->chat('What is my name?'); // "Your name is John."
+
+// Get the conversation ID for later use
+$conversationId = $conversation->getId();
+// e.g., "550e8400-e29b-41d4-a716-446655440000"
+```
+
+**Resume an existing conversation:**
+
+```php
+// Resume conversation using the saved ID
+$conversation = Llm::conversation($conversationId);
+$response = $conversation->chat('What else do you remember about me?');
+```
+
+**Use a specific provider for conversations:**
+
+```php
+$conversation = Llm::using('openai')->conversation();
+// or
+$conversation = Llm::using('lmstudio')->conversation();
+```
+
+**Practical API example:**
+
+```php
+// Start new chat
+Route::post('/chat/new', function (Request $request) {
+    $conversation = Llm::conversation();
+    $conversation->system('You are a helpful assistant.');
+    $response = $conversation->chat($request->input('message'));
+    
+    return [
+        'conversation_id' => $conversation->getId(),
+        'response' => $response->content,
+        'tokens' => $response->tokenUsage->totalTokens,
+    ];
+});
+
+// Continue existing chat
+Route::post('/chat/{id}', function (Request $request, string $id) {
+    $conversation = Llm::conversation($id);
+    $response = $conversation->chat($request->input('message'));
+    
+    return [
+        'response' => $response->content,
+        'tokens' => $response->tokenUsage->totalTokens,
+    ];
+});
+```
+
+**Other conversation methods:**
+
+```php
+$conversation->getMessages();       // Get all messages
+$conversation->getMessageCount();   // Count messages
+$conversation->getSystemPrompt();   // Get system prompt
+$conversation->clear();             // Clear history (keeps system prompt)
+$conversation->delete();            // Delete entire conversation
+$conversation->export();            // Export as array
+```
+
+**Storage Drivers:**
+
+By default, conversations are stored in the Laravel session (expires with session). For persistent storage, use the database driver:
+
+```env
+LLM_CONVERSATION_DRIVER=database
+```
+
+Then publish and run the migration:
+
+```bash
+php artisan vendor:publish --tag=llm-suite-migrations
+php artisan migrate
+```
+
+### Token Usage
+
+Track token consumption for cost monitoring:
+
+```php
+use Llm;
+
+$response = Llm::chatWithResponse('Explain Laravel in one paragraph.');
+
+// Access token usage
+echo $response->tokenUsage->promptTokens;      // Input tokens
+echo $response->tokenUsage->completionTokens;  // Output tokens
+echo $response->tokenUsage->totalTokens;       // Total tokens
+
+// Helper methods
+echo $response->getTotalTokens();
+echo $response->getPromptTokens();
+echo $response->getCompletionTokens();
+
+// As array
+$usage = $response->tokenUsage->toArray();
+// ['prompt_tokens' => 10, 'completion_tokens' => 50, 'total_tokens' => 60]
 ```
 
 ### Image Generation
@@ -381,6 +506,7 @@ $response = Llm::using('my-custom')->chat('Hello!');
 | `Llm::getProviders()` | List available providers |
 | `Llm::getDefaultProvider()` | Get the default provider name |
 | `Llm::client($name)` | Get the underlying client instance |
+| `Llm::conversation($id)` | Start new or resume existing conversation |
 
 ### Client Methods (OpenAI, LM Studio)
 
@@ -404,6 +530,21 @@ $client = Llm::client('openai');    // or 'lmstudio'
 | `model` | string\|null | Model used for the request |
 | `id` | string\|null | Request ID from the provider |
 | `latencyMs` | float\|null | Request latency in milliseconds |
+| `tokenUsage` | TokenUsage | Token usage statistics |
+
+### TokenUsage Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `promptTokens` | int | Number of tokens in the prompt/input |
+| `completionTokens` | int | Number of tokens in the completion/output |
+| `totalTokens` | int | Total tokens used |
+
+**Methods:**
+- `toArray()` - Convert to array
+- `hasData()` - Check if usage data is available
+- `TokenUsage::fromArray($data)` - Create from API response
+- `TokenUsage::empty()` - Create empty instance
 
 ### ImageResponse Properties
 
@@ -416,11 +557,13 @@ $client = Llm::client('openai');    // or 'lmstudio'
 
 ## Roadmap
 
+- [x] LM Studio support (local LLMs)
+- [x] Conversation management (session & database storage)
+- [x] Token usage tracking
 - [ ] Streaming support
 - [ ] Tool/Function calling
 - [ ] Embeddings API
 - [ ] RAG helpers
-- [x] LM Studio support (local LLMs)
 - [ ] Additional providers (Gemini, Groq, Ollama)
 - [ ] Rate limiting
 - [ ] Caching layer

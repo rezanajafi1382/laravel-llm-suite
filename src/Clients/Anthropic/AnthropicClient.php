@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Oziri\LlmSuite\Contracts\ChatClient;
 use Oziri\LlmSuite\Exceptions\ProviderRequestException;
 use Oziri\LlmSuite\Support\ChatResponse;
+use Oziri\LlmSuite\Support\TokenUsage;
 
 /**
  * Anthropic (Claude) API client implementation.
@@ -120,12 +121,18 @@ class AnthropicClient implements ChatClient
             }
         }
 
+        // Parse token usage from response (Anthropic uses input_tokens/output_tokens)
+        $tokenUsage = isset($data['usage']) 
+            ? TokenUsage::fromArray($data['usage']) 
+            : TokenUsage::empty();
+
         return new ChatResponse(
             content: $content,
             raw: $data,
             model: $data['model'] ?? null,
             id: $data['id'] ?? null,
             latencyMs: $latencyMs,
+            tokenUsage: $tokenUsage,
         );
     }
 }
