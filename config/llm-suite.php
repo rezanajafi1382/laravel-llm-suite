@@ -67,13 +67,13 @@ return [
     |--------------------------------------------------------------------------
     |
     | Configure how conversation history is stored. Available drivers:
-    | - 'session': Store in Laravel session (default, good for web apps)
-    | - 'database': Store in database (requires migration)
+    | - 'database': Store in database (default, requires migration)
+    | - 'session': Store in Laravel session (good for temporary chats)
     |
     */
 
     'conversation' => [
-        'driver' => env('LLM_CONVERSATION_DRIVER', 'session'),
+        'driver' => env('LLM_CONVERSATION_DRIVER', 'database'),
         'table' => 'llm_conversations',
     ],
 

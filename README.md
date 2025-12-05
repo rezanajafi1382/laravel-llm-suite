@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/OziriEmeka/laravel-llm-suite/master/assets/logo/laravel-llm-suite-logo.png" alt="Laravel LLM Suite">
+  <img src="https://raw.githubussionrcontent.com/OziriEmeka/laravel-llm-suite/master/assets/logo/laravel-llm-suite-logo.png" alt="Laravel LLM Suite">
 </p>
 
 # Laravel LLM Suite
@@ -72,8 +72,8 @@ LMSTUDIO_PORT=1234
 LMSTUDIO_API_KEY=        # Optional - leave empty if not using authentication
 LMSTUDIO_TIMEOUT=120
 
-# Conversation Storage
-LLM_CONVERSATION_DRIVER=session   # or 'database'
+# Conversation Storage (optional - database is default)
+LLM_CONVERSATION_DRIVER=database   # or 'session'
 ```
 
 The configuration file (`config/llm-suite.php`) allows you to customize providers:
@@ -114,8 +114,8 @@ return [
 
     // Conversation storage settings
     'conversation' => [
-        'driver' => env('LLM_CONVERSATION_DRIVER', 'session'),
-        'table' => 'llm_conversations',  // For database driver
+        'driver' => env('LLM_CONVERSATION_DRIVER', 'database'),
+        'table' => 'llm_conversations',
     ],
 ];
 ```
@@ -256,26 +256,12 @@ $conversation->export();            // Export as array
 
 | Driver | Storage | Best For |
 |--------|---------|----------|
-| `session` | Laravel session | Web apps, temporary chats (default) |
-| `database` | Database table | Persistent storage, chat history |
+| `database` | Database table | Persistent storage, chat history (default) |
+| `session` | Laravel session | Temporary chats, no database setup |
 
-**Session Driver (Default):**
+**Database Driver (Default):**
 
-Conversations are stored in the Laravel session and expire when the session ends. No setup required.
-
-```env
-LLM_CONVERSATION_DRIVER=session
-```
-
-**Database Driver:**
-
-For persistent storage across sessions:
-
-```env
-LLM_CONVERSATION_DRIVER=database
-```
-
-Publish and run the migration:
+Conversations are stored in the database for persistent storage. Publish and run the migration:
 
 ```bash
 php artisan vendor:publish --tag=llm-suite-migrations
@@ -283,6 +269,16 @@ php artisan migrate
 ```
 
 This creates the `llm_conversations` table for storing conversation history.
+
+**Session Driver:**
+
+For temporary chats that don't need persistence (expires with session):
+
+```env
+LLM_CONVERSATION_DRIVER=session
+```
+
+No migration required for session driver.
 
 ### Token Usage
 
